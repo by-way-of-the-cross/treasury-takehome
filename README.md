@@ -5,7 +5,8 @@ COLA application data, and the app verifies that the label says what the
 application claims — sorting every submission into one of three piles:
 **Approved**, **Rejected**, or **Needs Review** by a human agent.
 
-> **Live demo:** _deployment URL goes here_
+> **Live demo:** https://interview-ten-sigma.vercel.app
+> &nbsp;&nbsp;·&nbsp;&nbsp; Python functions: `/api/health` · `/api/warning_check`
 >
 > No setup needed to try it — expand **"No label handy? Load a built-in
 > example"** (single mode) or **"No files handy? Load a built-in batch"**
