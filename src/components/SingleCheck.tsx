@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { SAMPLE_CASES, type SampleCase } from "@/data/samples";
 import { verifyOne } from "@/lib/clientVerify";
+import { extractFromImage, autofillFromExtraction } from "@/lib/clientExtract";
 import { parseApplicationCsv, type CsvApplicationRow } from "@/lib/csv";
 import type { ApplicationData, BeverageType, VerifyResponse } from "@/lib/types";
 import ResultCard from "./ResultCard";
@@ -32,6 +33,8 @@ export default function SingleCheck() {
   const [error, setError] = useState<string | null>(null);
   const [response, setResponse] = useState<VerifyResponse | null>(null);
   const [csvRows, setCsvRows] = useState<CsvApplicationRow[]>([]);
+  const [scanning, setScanning] = useState(false);
+  const [suggested, setSuggested] = useState<Set<keyof ApplicationData>>(new Set());
   const csvInputRef = useRef<HTMLInputElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
 
@@ -41,7 +44,46 @@ export default function SingleCheck() {
 
   const set = (key: keyof ApplicationData) => (value: string) => {
     setForm((f) => ({ ...f, [key]: value }));
+    // Editing a field clears its "draft from label" highlight — that edit is
+    // the agent's review.
+    setSuggested((s) => {
+      if (!s.has(key)) return s;
+      const next = new Set(s);
+      next.delete(key);
+      return next;
+    });
   };
+
+  /**
+   * Read the uploaded label and pre-fill the form. A data-entry assist: the
+   * agent reviews and corrects the highlighted drafts before checking.
+   */
+  async function scanLabel() {
+    if (!file) {
+      setError("Add or take a label photo first, then scan.");
+      return;
+    }
+    setScanning(true);
+    setError(null);
+    setResponse(null);
+    try {
+      const ex = await extractFromImage(file);
+      if (!ex.isAlcoholLabel) {
+        setError("That image doesn't look like an alcohol label — try a clearer photo.");
+        return;
+      }
+      const { values, filled } = autofillFromExtraction(ex);
+      setForm((f) => ({ ...f, ...values }));
+      setSuggested(new Set(filled));
+      if (ex.imageQuality === "poor") {
+        setError("Read complete, but the photo is a bit unclear — double-check the highlighted fields.");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not read the label.");
+    } finally {
+      setScanning(false);
+    }
+  }
 
   async function importCsv(csvFile: File) {
     setError(null);
@@ -50,6 +92,7 @@ export default function SingleCheck() {
       const rows = await parseApplicationCsv(csvFile);
       setCsvRows(rows);
       setForm({ ...EMPTY_FORM, ...rows[0].application });
+      setSuggested(new Set());
     } catch (err) {
       setError(err instanceof Error ? err.message : "That CSV could not be read.");
     }
@@ -58,6 +101,7 @@ export default function SingleCheck() {
   async function loadSample(sample: SampleCase) {
     setError(null);
     setResponse(null);
+    setSuggested(new Set());
     setForm({ ...EMPTY_FORM, ...sample.application });
     try {
       const res = await fetch(sample.imagePath);
@@ -112,6 +156,16 @@ export default function SingleCheck() {
             />
           </div>
 
+          {suggested.size > 0 && (
+            <p
+              role="status"
+              className="rounded-md border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm font-medium text-amber-900"
+            >
+              ✎ Draft filled from the label — review the highlighted fields for
+              typos and accuracy before checking.
+            </p>
+          )}
+
           {csvRows.length > 1 && (
             <label className="block">
               <span className="field-label">Application from CSV ({csvRows.length} rows)</span>
@@ -161,11 +215,11 @@ export default function SingleCheck() {
             </div>
           </div>
 
-          <Field label="Brand name" required value={form.brandName} onChange={set("brandName")} placeholder="Old Tom Distillery" />
-          <Field label="Class / type" required value={form.classType} onChange={set("classType")} placeholder="Kentucky Straight Bourbon Whiskey" />
+          <Field label="Brand name" required value={form.brandName} onChange={set("brandName")} placeholder="Old Tom Distillery" suggested={suggested.has("brandName")} />
+          <Field label="Class / type" required value={form.classType} onChange={set("classType")} placeholder="Kentucky Straight Bourbon Whiskey" suggested={suggested.has("classType")} />
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Alcohol content" value={form.alcoholContent} onChange={set("alcoholContent")} placeholder="45% Alc./Vol." />
-            <Field label="Net contents" value={form.netContents} onChange={set("netContents")} placeholder="750 mL" />
+            <Field label="Alcohol content" value={form.alcoholContent} onChange={set("alcoholContent")} placeholder="45% Alc./Vol." suggested={suggested.has("alcoholContent")} />
+            <Field label="Net contents" value={form.netContents} onChange={set("netContents")} placeholder="750 mL" suggested={suggested.has("netContents")} />
           </div>
 
           <details className="group">
@@ -173,16 +227,27 @@ export default function SingleCheck() {
               More fields (optional)
             </summary>
             <div className="mt-4 space-y-5">
-              <Field label="Bottler name & address" value={form.bottlerInfo ?? ""} onChange={set("bottlerInfo")} placeholder="Bottled by …, City, State" />
-              <Field label="Country of origin" value={form.countryOfOrigin ?? ""} onChange={set("countryOfOrigin")} placeholder="Product of France" />
+              <Field label="Bottler name & address" value={form.bottlerInfo ?? ""} onChange={set("bottlerInfo")} placeholder="Bottled by …, City, State" suggested={suggested.has("bottlerInfo")} />
+              <Field label="Country of origin" value={form.countryOfOrigin ?? ""} onChange={set("countryOfOrigin")} placeholder="Product of France" suggested={suggested.has("countryOfOrigin")} />
             </div>
           </details>
         </fieldset>
 
         <div className="space-y-4">
-          <div className="form-card p-6">
-            <h2 className="font-display mb-4 text-xl font-semibold">2. Label image</h2>
+          <div className="form-card space-y-4 p-6">
+            <h2 className="font-display text-xl font-semibold">2. Label image</h2>
             <UploadDropzone file={file} onFile={setFile} />
+            <button
+              type="button"
+              onClick={scanLabel}
+              disabled={!file || scanning}
+              className="flex w-full items-center justify-center gap-2 rounded-md border border-accent/40 bg-paper px-4 py-2.5 font-medium text-accent transition-colors hover:bg-accent hover:text-white disabled:opacity-50 disabled:hover:bg-paper disabled:hover:text-accent cursor-pointer disabled:cursor-not-allowed"
+            >
+              {scanning ? "Reading the label…" : "📷 Scan label to auto-fill the form"}
+            </button>
+            <p className="text-center text-xs text-ink-soft">
+              Reads the bottle and drafts the application fields for you to review — no retyping.
+            </p>
           </div>
 
           <button
@@ -235,14 +300,17 @@ interface FieldProps {
   onChange: (value: string) => void;
   placeholder?: string;
   required?: boolean;
+  /** Highlight as an unreviewed draft read off the label. */
+  suggested?: boolean;
 }
 
-function Field({ label, value, onChange, placeholder, required }: FieldProps) {
+function Field({ label, value, onChange, placeholder, required, suggested }: FieldProps) {
   return (
     <label className="block">
       <span className="field-label">
         {label}
         {required && <span className="text-reject"> *</span>}
+        {suggested && <span className="ml-2 text-xs font-normal text-amber-700">✎ from label</span>}
       </span>
       <input
         type="text"
@@ -250,7 +318,7 @@ function Field({ label, value, onChange, placeholder, required }: FieldProps) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="text-input mt-1"
+        className={`text-input mt-1 ${suggested ? "ring-2 ring-amber-400/80 bg-amber-50" : ""}`}
       />
     </label>
   );
