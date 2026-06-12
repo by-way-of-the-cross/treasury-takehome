@@ -17,7 +17,7 @@ application claims — sorting every submission into one of three piles:
 
 ```bash
 bun install
-cp .env.example .env.local    # add your Vercel AI Gateway key (AI_GATEWAY_API_KEY)
+cp .env.example .env.local    # add a free Google AI Studio key (GOOGLE_GENERATIVE_AI_API_KEY)
 bun run dev                   # http://localhost:3000
 bun run test                  # 97 unit tests (no key needed)
 
@@ -27,11 +27,10 @@ node scripts/e2e-cola.mjs     # 6 real approved labels → all must approve
 node scripts/e2e-scale.mjs    # Sarah's scenario: 200-label batch, throughput report
 ```
 
-The vision model is reached through the **Vercel AI Gateway** — one Vercel-managed
-endpoint that routes to the model. A deployed Vercel app authenticates
-automatically via its OIDC token (no key in the repo); local dev uses an
-`AI_GATEWAY_API_KEY`. The model defaults to `google/gemini-2.5-flash` and is
-overridable with `GATEWAY_MODEL`.
+The vision model is **Google Gemini**, reached directly through the AI SDK.
+Authentication is a `GOOGLE_GENERATIVE_AI_API_KEY` — a free
+[Google AI Studio](https://aistudio.google.com/apikey) key (no credit card).
+The model defaults to `gemini-2.5-flash` and is overridable with `GEMINI_MODEL`.
 
 Optional: `node scripts/generate-samples.mjs` regenerates the demo label
 images (requires librsvg).
@@ -73,11 +72,11 @@ application ──► verification (pure TypeScript)    ──► per-field chec
 
 - **Next.js 16 / React / TypeScript / Tailwind 4** — one repo, API routes and
   UI together, deployed on Vercel. Package manager: **bun**.
-- **Gemini 2.5 Flash via the Vercel AI Gateway** (`ai` SDK + `zod`) — vision
+- **Google Gemini 2.5 Flash** (`ai` SDK + `@ai-sdk/google` + `zod`) — vision
   extraction with a strict structured-output schema and thinking disabled for
-  latency. The model is reached through Vercel's gateway, so the provider can
-  be swapped to any gateway model (or BYO key) without code changes; auth is
-  the deployment's OIDC token, not a key in the repo.
+  latency. Isolated behind one function, so the provider can be swapped (a
+  self-hosted VLM inside a restricted network, per Marcus's firewall note)
+  without touching the rest of the app.
 - **Python Vercel Functions** (`api/*.py`) — a polyglot deployment: an
   independent government-warning validator (`/api/warning_check`) re-implements
   the most tamper-sensitive check in a separate runtime — the cross-stack

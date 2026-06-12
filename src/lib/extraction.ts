@@ -1,4 +1,5 @@
 import { generateObject } from "ai";
+import { google } from "@ai-sdk/google";
 import { z } from "zod";
 import type { LabelExtraction } from "./types";
 
@@ -7,13 +8,12 @@ import type { LabelExtraction } from "./types";
  * LLM; swapping providers (e.g. a self-hosted VLM inside a restricted
  * network) means reimplementing just `extractLabelFields`.
  *
- * Model access goes through the Vercel AI Gateway: a deployed Vercel app
- * authenticates automatically via its OIDC token (no key in code), and
- * local development uses an AI_GATEWAY_API_KEY. The model is a plain
- * gateway model string (`provider/model`) — override with GATEWAY_MODEL.
+ * Uses Google Gemini directly via the AI SDK. Authentication is a
+ * GOOGLE_GENERATIVE_AI_API_KEY (a free Google AI Studio key); the model is
+ * overridable with GEMINI_MODEL.
  */
 
-const MODEL = process.env.GATEWAY_MODEL ?? "google/gemini-2.5-flash";
+const MODEL = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
 
 const fieldSchema = z.object({
   text: z.string().nullable(),
@@ -116,7 +116,7 @@ export async function extractLabelFields(
     if (attempt > 0) await new Promise((r) => setTimeout(r, 600));
     try {
       const { object } = await generateObject({
-        model: MODEL,
+        model: google(MODEL),
         schema: extractionSchema,
         // Extraction is perception, not reasoning — temperature 0 and
         // (where the provider supports it) no thinking budget keep latency

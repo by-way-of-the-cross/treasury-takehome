@@ -1,9 +1,9 @@
 """
 Health / version endpoint — Python (Vercel Function).
 
-A liveness probe that also reports which vision model the deployment is
-configured to route through the Vercel AI Gateway, and confirms the Python
-runtime is live alongside the Next.js app. Standard library only.
+A liveness probe that also reports which Gemini vision model the deployment
+is configured to use, and confirms the Python runtime is live alongside the
+Next.js app. Standard library only.
 
 GET /api/health -> {"status": "ok", "model": "...", "runtime": "python", ...}
 """
@@ -21,7 +21,7 @@ class handler(BaseHTTPRequestHandler):
             "status": "ok",
             "runtime": "python",
             "pythonVersion": platform.python_version(),
-            "model": os.environ.get("GATEWAY_MODEL", "google/gemini-2.5-flash"),
+            "model": os.environ.get("GEMINI_MODEL", "gemini-2.5-flash"),
             "node": sys.platform,
         }
         payload = json.dumps(body).encode("utf-8")
