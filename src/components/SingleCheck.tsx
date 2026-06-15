@@ -36,6 +36,7 @@ export default function SingleCheck() {
   const [scanning, setScanning] = useState(false);
   const [suggested, setSuggested] = useState<Set<keyof ApplicationData>>(new Set());
   const csvInputRef = useRef<HTMLInputElement>(null);
+  const scanInputRef = useRef<HTMLInputElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -55,19 +56,22 @@ export default function SingleCheck() {
   };
 
   /**
-   * Read the uploaded label and pre-fill the form. A data-entry assist: the
-   * agent reviews and corrects the highlighted drafts before checking.
+   * Read a label and pre-fill the form. A data-entry assist: the agent
+   * reviews and corrects the highlighted drafts before checking. If no image
+   * is attached yet, this opens the camera/file picker first — one tap from
+   * "I have a bottle" to "the form is filled".
    */
-  async function scanLabel() {
-    if (!file) {
-      setError("Add or take a label photo first, then scan.");
+  async function scanLabel(target?: File) {
+    const img = target ?? file;
+    if (!img) {
+      scanInputRef.current?.click();
       return;
     }
     setScanning(true);
     setError(null);
     setResponse(null);
     try {
-      const ex = await extractFromImage(file);
+      const ex = await extractFromImage(img);
       if (!ex.isAlcoholLabel) {
         setError("That image doesn't look like an alcohol label — try a clearer photo.");
         return;
@@ -239,14 +243,33 @@ export default function SingleCheck() {
             <UploadDropzone file={file} onFile={setFile} />
             <button
               type="button"
-              onClick={scanLabel}
-              disabled={!file || scanning}
-              className="flex w-full items-center justify-center gap-2 rounded-md border border-accent/40 bg-paper px-4 py-2.5 font-medium text-accent transition-colors hover:bg-accent hover:text-white disabled:opacity-50 disabled:hover:bg-paper disabled:hover:text-accent cursor-pointer disabled:cursor-not-allowed"
+              onClick={() => scanLabel()}
+              disabled={scanning}
+              className="flex w-full items-center justify-center gap-2 rounded-md border border-accent/40 bg-paper px-4 py-2.5 font-medium text-accent transition-colors hover:bg-accent hover:text-white disabled:opacity-60 cursor-pointer disabled:cursor-wait"
             >
-              {scanning ? "Reading the label…" : "📷 Scan label to auto-fill the form"}
+              {scanning
+                ? "Reading the label…"
+                : file
+                  ? "📷 Scan this label to auto-fill the form"
+                  : "📷 Take / upload a label photo to auto-fill"}
             </button>
+            <input
+              ref={scanInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              hidden
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                e.target.value = "";
+                if (f) {
+                  setFile(f);
+                  scanLabel(f);
+                }
+              }}
+            />
             <p className="text-center text-xs text-ink-soft">
-              Reads the bottle and drafts the application fields for you to review — no retyping.
+              Snap or upload a bottle photo and we read the fields for you — then
+              review the highlighted drafts and check.
             </p>
           </div>
 
