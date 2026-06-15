@@ -11,24 +11,27 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@ai-sdk/google": "^2",
-    "ai": "^5.0.0",
+    "@ai-sdk/google": "^2.0.75",
+    "ai": "^5.0.202",
     "next": "16.2.9",
     "papaparse": "^5.5.3",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "zod": "^3.25.0"
+    "zod": "^3.25.76"
+  },
+  "overrides": {
+    "postcss": "^8.5.10"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@tailwindcss/postcss": "^4.3.1",
+    "@types/node": "^20.19.43",
     "@types/papaparse": "^5.5.2",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.4",
     "eslint-config-next": "16.2.9",
-    "tailwindcss": "^4",
-    "typescript": "^5",
-    "vitest": "^4.1.8"
+    "tailwindcss": "^4.3.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.9"
   }
 }
