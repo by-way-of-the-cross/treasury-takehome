@@ -45,17 +45,33 @@ export default function RootLayout({
         {/* Treasury / TTB masthead */}
         <header className="bg-navy text-white">
           <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3">
-            <span
-              aria-hidden
-              className="flex h-11 w-11 flex-none items-center justify-center rounded-full border-2 border-gold font-display text-sm font-black tracking-tight text-gold"
+            <a
+              href="https://www.ttb.gov"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Alcohol and Tobacco Tax and Trade Bureau (ttb.gov)"
+              className="flex h-11 w-11 flex-none items-center justify-center rounded-full border-2 border-gold font-display text-sm font-black tracking-tight text-gold transition hover:bg-gold hover:text-navy"
             >
               TTB
-            </span>
+            </a>
             <div className="leading-tight">
-              <p className="font-display text-sm font-bold sm:text-base">
+              <a
+                href="https://www.ttb.gov"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-display text-sm font-bold underline-offset-2 hover:underline sm:text-base"
+              >
                 Alcohol and Tobacco Tax and Trade Bureau
-              </p>
-              <p className="text-xs text-white/70">U.S. Department of the Treasury</p>
+              </a>
+              <br />
+              <a
+                href="https://home.treasury.gov"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-white/70 underline-offset-2 transition hover:text-white hover:underline"
+              >
+                U.S. Department of the Treasury
+              </a>
             </div>
             <div className="ml-auto hidden text-right leading-tight sm:block">
               <p className="text-[11px] uppercase tracking-[0.15em] text-white/60">
