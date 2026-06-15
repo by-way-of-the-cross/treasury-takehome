@@ -34,3 +34,27 @@ export function allowRequest(clientId: string): boolean {
   }
   return true;
 }
+
+// Global daily ceiling on model calls — a hard backstop so a public,
+// unauthenticated prototype can't drain the Gemini quota if the URL leaks.
+// Unlike the per-IP limiter above, this caps *total* calls across all
+// clients. State is per-serverless-instance, so the effective ceiling scales
+// with instance count; the Gemini account's own free-tier quota is the
+// ultimate backstop. Override with MAX_REQUESTS_PER_DAY.
+const DAILY_CAP = Number(process.env.MAX_REQUESTS_PER_DAY) || 500;
+const DAY_MS = 86_400_000;
+
+let daily = { day: -1, count: 0 };
+
+/**
+ * Returns true if the global daily model-call budget has room, counting this
+ * call against it. Call this immediately before a model call (after input
+ * validation), so only real model calls consume the budget.
+ */
+export function withinDailyBudget(): boolean {
+  const day = Math.floor(Date.now() / DAY_MS); // UTC day index, resets at 00:00 UTC
+  if (day !== daily.day) daily = { day, count: 0 };
+  if (daily.count >= DAILY_CAP) return false;
+  daily.count++;
+  return true;
+}

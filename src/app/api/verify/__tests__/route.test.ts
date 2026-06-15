@@ -7,9 +7,11 @@ import type { LabelExtraction } from "@/lib/types";
 vi.mock("@/lib/extraction", () => ({
   extractLabelFields: vi.fn(),
 }));
-// Each client IP gets a fresh allowance so validation tests don't trip it.
+// Each client IP gets a fresh allowance so validation tests don't trip it,
+// and the global daily budget always has room.
 vi.mock("@/lib/rateLimit", () => ({
   allowRequest: vi.fn(() => true),
+  withinDailyBudget: vi.fn(() => true),
 }));
 
 import { POST } from "../route";

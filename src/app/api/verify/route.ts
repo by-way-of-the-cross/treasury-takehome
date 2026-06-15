@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { extractLabelFields } from "@/lib/extraction";
 import { verifyLabel } from "@/lib/verify";
-import { allowRequest } from "@/lib/rateLimit";
+import { allowRequest, withinDailyBudget } from "@/lib/rateLimit";
 import type { ApplicationData, BeverageType, VerifyResponse } from "@/lib/types";
 
 export const maxDuration = 30;
@@ -61,6 +61,13 @@ export async function POST(req: NextRequest) {
   }
   if (!app.brandName || !app.classType) {
     return badRequest("Brand name and class/type are required.");
+  }
+
+  if (!withinDailyBudget()) {
+    return badRequest(
+      "This demo has reached its daily request limit. Please try again tomorrow.",
+      429,
+    );
   }
 
   const started = Date.now();

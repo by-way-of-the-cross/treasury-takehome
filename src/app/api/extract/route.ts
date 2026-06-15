@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { extractLabelFields } from "@/lib/extraction";
-import { allowRequest } from "@/lib/rateLimit";
+import { allowRequest, withinDailyBudget } from "@/lib/rateLimit";
 import type { LabelExtraction } from "@/lib/types";
 
 export const maxDuration = 30;
@@ -47,6 +47,13 @@ export async function POST(req: NextRequest) {
   }
   if (image.size > MAX_IMAGE_BYTES) {
     return badRequest("Image is too large — please use an image under 4 MB.");
+  }
+
+  if (!withinDailyBudget()) {
+    return badRequest(
+      "This demo has reached its daily request limit. Please try again tomorrow.",
+      429,
+    );
   }
 
   const started = Date.now();
