@@ -21,8 +21,8 @@ export default function Home() {
 
   return (
     <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
-      <header className="mb-8 border-b-2 border-ink/80 pb-6">
-        <p className="field-label">Alcohol and Tobacco Tax and Trade Bureau · Prototype</p>
+      <header className="mb-8 border-b-4 border-accent pb-6">
+        <p className="field-label text-accent">Certificate of Label Approval (COLA) · Label verification</p>
         <h1 className="font-display mt-1 text-4xl font-bold tracking-tight">Label Check</h1>
         <p className="mt-2 max-w-2xl text-ink-soft">
           Upload a label and the matching application details. Label Check reads the label and
@@ -99,7 +99,7 @@ function Tab({
       onClick={onClick}
       className={`rounded-md px-5 py-2.5 text-lg font-semibold transition-colors cursor-pointer ${
         active
-          ? "bg-ink text-paper-raised shadow"
+          ? "bg-accent text-white shadow"
           : "bg-paper-raised border border-rule text-ink-soft hover:text-ink"
       }`}
     >

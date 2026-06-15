@@ -1,18 +1,21 @@
 @import "tailwindcss";
 
+/* U.S. Web Design System (USWDS) federal palette — the look of Treasury/TTB. */
 :root {
-  --paper: #f6f2e8;
-  --paper-raised: #fdfbf4;
-  --ink: #21303f;
-  --ink-soft: #5b6878;
-  --rule: #d8d0bd;
-  --accent: #1f4e79;
-  --approve: #1d6b3c;
-  --approve-bg: #e9f2ea;
-  --reject: #9d2c1e;
-  --reject-bg: #f9ebe7;
-  --review: #8a5a00;
-  --review-bg: #f9f1dd;
+  --paper: #f4f6f8;
+  --paper-raised: #ffffff;
+  --ink: #1b1b1b;
+  --ink-soft: #565c65;
+  --rule: #dfe1e2;
+  --accent: #005ea2; /* USWDS primary blue */
+  --navy: #162e51; /* USWDS dark navy — masthead/footer */
+  --gold: #ffbe2e; /* USWDS gold — accents/alerts */
+  --approve: #008817;
+  --approve-bg: #ecf3ec;
+  --reject: #b50909;
+  --reject-bg: #f4e3db;
+  --review: #c05600;
+  --review-bg: #faf3d1;
 }
 
 @theme inline {
@@ -22,29 +25,29 @@
   --color-ink-soft: var(--ink-soft);
   --color-rule: var(--rule);
   --color-accent: var(--accent);
+  --color-navy: var(--navy);
+  --color-gold: var(--gold);
   --color-approve: var(--approve);
   --color-approve-bg: var(--approve-bg);
   --color-reject: var(--reject);
   --color-reject-bg: var(--reject-bg);
   --color-review: var(--review);
   --color-review-bg: var(--review-bg);
-  --font-sans: var(--font-franklin);
-  --font-display: var(--font-zilla);
-  --font-mono: var(--font-plex-mono);
+  --font-sans: var(--font-public);
+  --font-display: var(--font-merri);
+  --font-mono: var(--font-mono-plex);
 }
 
 body {
   background-color: var(--paper);
   color: var(--ink);
-  font-family: var(--font-franklin), Georgia, serif;
+  font-family: var(--font-public), system-ui, -apple-system, sans-serif;
   font-size: 17px;
-  /* Subtle paper grain */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
 }
 
 /* A filled-in value, typewritten onto the form */
 .typed {
-  font-family: var(--font-plex-mono), monospace;
+  font-family: var(--font-mono-plex), monospace;
   font-size: 0.92em;
 }
 
@@ -54,7 +57,7 @@ body {
   padding: 0.3em 0.9em;
   border: 3px double currentColor;
   border-radius: 6px;
-  font-family: var(--font-zilla), serif;
+  font-family: var(--font-merri), serif;
   font-weight: 700;
   font-size: 1.55rem;
   letter-spacing: 0.14em;
@@ -127,7 +130,7 @@ body {
   border: 0;
   border-bottom: 1.5px solid var(--rule);
   padding: 0.35rem 0.1rem;
-  font-family: var(--font-plex-mono), monospace;
+  font-family: var(--font-mono-plex), monospace;
   font-size: 1rem;
   color: var(--ink);
   outline: none;

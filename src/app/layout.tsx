@@ -1,28 +1,32 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Libre_Franklin, Zilla_Slab } from "next/font/google";
+import { IBM_Plex_Mono, Merriweather, Public_Sans } from "next/font/google";
+import GovBanner from "@/components/GovBanner";
 import "./globals.css";
 
-const franklin = Libre_Franklin({
-  variable: "--font-franklin",
+// Public Sans is the official U.S. government typeface; Merriweather is the
+// USWDS serif used for federal headings.
+const publicSans = Public_Sans({
+  variable: "--font-public",
+  weight: ["400", "600", "700"],
   subsets: ["latin"],
 });
 
-const zilla = Zilla_Slab({
-  variable: "--font-zilla",
-  weight: ["500", "600", "700"],
+const merriweather = Merriweather({
+  variable: "--font-merri",
+  weight: ["700", "900"],
   subsets: ["latin"],
 });
 
 const plexMono = IBM_Plex_Mono({
-  variable: "--font-plex-mono",
+  variable: "--font-mono-plex",
   weight: ["400", "500"],
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Label Check — TTB Label Verification",
+  title: "Label Check — TTB COLA Label Verification (Prototype)",
   description:
-    "AI-assisted verification of alcohol beverage labels against COLA application data.",
+    "Prototype: AI-assisted verification of alcohol beverage labels against COLA application data. For testing only; not an official government service.",
 };
 
 export default function RootLayout({
@@ -33,9 +37,50 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${franklin.variable} ${zilla.variable} ${plexMono.variable} h-full antialiased`}
+      className={`${publicSans.variable} ${merriweather.variable} ${plexMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <GovBanner />
+
+        {/* Treasury / TTB masthead */}
+        <header className="bg-navy text-white">
+          <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3">
+            <span
+              aria-hidden
+              className="flex h-11 w-11 flex-none items-center justify-center rounded-full border-2 border-gold font-display text-sm font-black tracking-tight text-gold"
+            >
+              TTB
+            </span>
+            <div className="leading-tight">
+              <p className="font-display text-sm font-bold sm:text-base">
+                Alcohol and Tobacco Tax and Trade Bureau
+              </p>
+              <p className="text-xs text-white/70">U.S. Department of the Treasury</p>
+            </div>
+            <div className="ml-auto hidden text-right leading-tight sm:block">
+              <p className="text-[11px] uppercase tracking-[0.15em] text-white/60">
+                COLA
+              </p>
+              <p className="font-display font-bold">Label Check</p>
+            </div>
+          </div>
+        </header>
+
+        {/* Unmissable disclaimer: this is a prototype, not a real gov service. */}
+        <aside
+          role="note"
+          className="border-y-[3px] border-gold bg-review-bg text-ink"
+        >
+          <p className="mx-auto max-w-5xl px-4 py-2 text-sm">
+            <strong>For testing purposes only.</strong> This is a prototype built
+            for a technical exercise. It is <strong>not</strong> an official U.S.
+            government website or service, and it makes no real regulatory
+            determinations.
+          </p>
+        </aside>
+
+        {children}
+      </body>
     </html>
   );
 }
