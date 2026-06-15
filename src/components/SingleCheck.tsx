@@ -136,11 +136,59 @@ export default function SingleCheck() {
 
   return (
     <div className="space-y-6">
-      <form onSubmit={submit} className="grid gap-6 lg:grid-cols-2">
+      <form onSubmit={submit} className="space-y-6">
+        {/* Step 1 — scanning the label leads the flow: snap a photo, the form
+            fills itself. Manual entry below is the fallback. */}
+        <div className="form-card space-y-4 p-6">
+          <h2 className="font-display text-xl font-semibold">1. Scan or upload the label</h2>
+          <button
+            type="button"
+            onClick={() => scanLabel()}
+            disabled={scanning}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-accent bg-accent/5 px-6 py-4 text-lg font-bold text-accent transition hover:bg-accent hover:text-white disabled:cursor-wait disabled:opacity-70 cursor-pointer"
+          >
+            {scanning ? (
+              <><Spinner /> Reading the label…</>
+            ) : (
+              <>📷 {file ? "Scan this label to auto-fill" : "Take or upload a label photo"}</>
+            )}
+          </button>
+          <input
+            ref={scanInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            hidden
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              e.target.value = "";
+              if (f) {
+                setFile(f);
+                scanLabel(f);
+              }
+            }}
+          />
+          <p className="text-center text-sm text-ink-soft">
+            Snap or upload a bottle photo — we read the fields and fill the form
+            for you. Or just enter the details by hand below.
+          </p>
+          <UploadDropzone file={file} onFile={setFile} />
+          {scanning && (
+            <div role="status" className="space-y-1.5 pt-1">
+              <div className="loading-track h-1.5 w-full">
+                <div className="loading-bar" />
+              </div>
+              <p className="text-center text-xs font-medium text-accent">
+                Reading the label and filling the form…
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Step 2 — review the auto-filled draft (or type it in). */}
         <fieldset className="form-card space-y-5 p-6">
           <legend className="sr-only">Application data</legend>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-display text-xl font-semibold">1. Application details</h2>
+            <h2 className="font-display text-xl font-semibold">2. Review the application details</h2>
             <button
               type="button"
               onClick={() => csvInputRef.current?.click()}
@@ -237,48 +285,18 @@ export default function SingleCheck() {
           </details>
         </fieldset>
 
+        {/* Step 3 — the verdict. */}
         <div className="space-y-4">
-          <div className="form-card space-y-4 p-6">
-            <h2 className="font-display text-xl font-semibold">2. Label image</h2>
-            <UploadDropzone file={file} onFile={setFile} />
-            <button
-              type="button"
-              onClick={() => scanLabel()}
-              disabled={scanning}
-              className="flex w-full items-center justify-center gap-2 rounded-md border border-accent/40 bg-paper px-4 py-2.5 font-medium text-accent transition-colors hover:bg-accent hover:text-white disabled:opacity-60 cursor-pointer disabled:cursor-wait"
-            >
-              {scanning
-                ? "Reading the label…"
-                : file
-                  ? "📷 Scan this label to auto-fill the form"
-                  : "📷 Take / upload a label photo to auto-fill"}
-            </button>
-            <input
-              ref={scanInputRef}
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              hidden
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                e.target.value = "";
-                if (f) {
-                  setFile(f);
-                  scanLabel(f);
-                }
-              }}
-            />
-            <p className="text-center text-xs text-ink-soft">
-              Snap or upload a bottle photo and we read the fields for you — then
-              review the highlighted drafts and check.
-            </p>
-          </div>
-
           <button
             type="submit"
             disabled={busy}
-            className="w-full rounded-lg bg-accent px-6 py-4 text-xl font-bold text-white shadow transition hover:brightness-110 disabled:opacity-60 cursor-pointer disabled:cursor-wait"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-6 py-4 text-xl font-bold text-white shadow transition hover:brightness-110 disabled:opacity-70 cursor-pointer disabled:cursor-wait"
           >
-            {busy ? "Reading the label…" : "Check Label"}
+            {busy ? (
+              <><Spinner /> Checking the label…</>
+            ) : (
+              "3. Check Label"
+            )}
           </button>
 
           {error && (
@@ -314,6 +332,16 @@ export default function SingleCheck() {
         </div>
       </details>
     </div>
+  );
+}
+
+/** Inline spinner for button busy states. */
+function Spinner() {
+  return (
+    <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.4 0 0 5.4 0 12h4z" />
+    </svg>
   );
 }
 
