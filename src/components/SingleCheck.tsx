@@ -37,6 +37,7 @@ export default function SingleCheck() {
   const [suggested, setSuggested] = useState<Set<keyof ApplicationData>>(new Set());
   const csvInputRef = useRef<HTMLInputElement>(null);
   const scanInputRef = useRef<HTMLInputElement>(null);
+  const reviewRef = useRef<HTMLFieldSetElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -79,6 +80,13 @@ export default function SingleCheck() {
       const { values, filled } = autofillFromExtraction(ex);
       setForm((f) => ({ ...f, ...values }));
       setSuggested(new Set(filled));
+      // Carry the agent straight to the filled-in details so they don't have
+      // to scroll — the draft is ready to review.
+      if (filled.length > 0) {
+        requestAnimationFrame(() =>
+          reviewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+        );
+      }
       if (ex.imageQuality === "poor") {
         setError("Read complete, but the photo is a bit unclear — double-check the highlighted fields.");
       }
@@ -185,7 +193,7 @@ export default function SingleCheck() {
         </div>
 
         {/* Step 2 — review the auto-filled draft (or type it in). */}
-        <fieldset className="form-card space-y-5 p-6">
+        <fieldset ref={reviewRef} className="form-card space-y-5 p-6 scroll-mt-4">
           <legend className="sr-only">Application data</legend>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-display text-xl font-semibold">2. Review the application details</h2>
